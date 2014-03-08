@@ -1,0 +1,17 @@
+{
+  "name": "itp466-parking-app",
+  "version": "0.0.2",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "3.4.4",
+    "jade": "*",
+    "request": "*",
+    "async": "*",
+    "mongodb": ">= 0.9.6-7",
+    "mongoose" : ">= 3.6",
+    "mongoskin" : "*"
+  }
+}
