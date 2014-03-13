@@ -9,7 +9,7 @@ var routes = require("./routes");
 var app = express();
 // mongo 
 var mongoose = require('mongoose');
-var mongoUri = /*'mongodb://heroku_app22854962:4lklfpqm26kinofbfla6m7alpk@ds033459.mongolab.com:33459/heroku_app22854962';*/ process.env.MONGOLAB_URI;
+var mongoUri = process.env.MONGOLAB_URI;
 mongoose.connect(mongoUri, function (err, res) {
   if (err) {
     console.log ('Error connecting to: ' + mongoUri + ' ' + err);
