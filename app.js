@@ -124,7 +124,8 @@ app.post('/add', function(req, res) {
         };
         // add to spaces collection
         spacesColl.insert(newItem, {}, function() {
-          res.send("Inserted space!"); 
+          res.send("Inserted space!");
+		  console.log("Inserted"); 
         });
 
 
