@@ -1,6 +1,3 @@
-// http - http://nodejs.org/api/http.html
-var http = require('http');
-// express.js - http://expressjs.com
 var express = require('express');
 // path - http://nodejs.org/api/path.html
 var path = require('path');
@@ -11,10 +8,16 @@ var async = require('async');
 var routes = require("./routes");
 
 // mongo 
-var mongo   = require('mongoskin');
-var DB = 'localhost:27017/parqdb'
+var mongo   = require('mongodb'), MongoClient = mongodb.MongoClient
+var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/mydb';
+var DB = 'localhost:27017/ddparqdb'
 var COLL = 'spaces'
-
+mongo.Db.connect(mongoUri, function (err, db) {
+  db.collection('mydocs', function(er, collection) {
+    collection.insert({'mykey': 'myvalue'}, {safe: true}, function(er, rs) {
+    });
+  });
+});
 // create our app using express
 var app = express();
 
