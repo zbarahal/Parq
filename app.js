@@ -102,6 +102,7 @@ app.post('/add', function(req, res) {
   var options = 'address=' + geoAddress + '&sensor=false';
 
   console.log("hitting " + domain + options);
+  console.log("Test");
 
   request(domain + options, function (error, response, body) {
     
