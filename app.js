@@ -6,20 +6,38 @@ var request = require('request');
 var async = require('async');
 
 var routes = require("./routes");
-var app = express();
 // mongo 
 var mongoose = require('mongoose');
-var mongoUri = process.env.MONGOLAB_URI;
+
+//Use the top Uri if running in heroku. Use bottom one if running locally.
+
+//var mongoUri = process.env.MONGOLAB_URI;
+var mongoUri = 'mongodb://heroku_app22854962:4lklfpqm26kinofbfla6m7alpk@ds033459.mongolab.com:33459/heroku_app22854962';
 mongoose.connect(mongoUri, function (err, res) {
   if (err) {
-    console.log ('Error connecting to: ' + mongoUri + ' ' + err);
+    console.log ('Error connecting to Mongolab: ' + err);
   }
   else {
     console.log ('Succeeded');
   }
 });
-//spacesColl = mongo.db(DB, { safe: true }).collection(COLL)
 
+var spaceSchema = new mongoose.Schema({
+  UUID: {type: Number, min:0},
+  name: String, 
+  address: String,
+  coordinate: {
+    lat: Number,
+    lng: Number},
+  price: Number,
+  startTime: Number,
+  endTime: Number,
+  reserved: Boolean
+});
+
+var Space = mongoose.model('spaces', spaceSchema);
+
+var app = express();
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
@@ -40,9 +58,75 @@ app.use(express.static(path.join(__dirname, 'static')));
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
-
 app.get('/', routes.index);
 
+//add a space to database
+app.post('/add', function(req, res) {
+  body = req.body;
+  
+  var name = body.name,
+      address = body.address,
+      price = body.price,
+      startTime = body.startTime,
+      endTime = body.endTime;
+
+
+  if (!name) {
+    errorResponse("Invalid /add: No Name", res);
+  }
+  if (!address) {
+    errorResponse("Invalid /add: No Address", res);
+  }
+  if (!price) {
+    errorResponse("Invalid /add: No Price", res);
+  }
+  if (!startTime) {
+    errorResponse("Invalid /add: No Start Time", res);
+  }
+  if (!endTime) {
+    errorResponse("Invalid /add: No End Time", res);
+  }
+
+  var nextId = Space.find().count(function(err, count) {
+    nextId = count + 1;
+  });
+  // geocodable address
+  var geoAddress = address.split(' ').join('+');
+
+  var domain = 'http://maps.googleapis.com/maps/api/geocode/json?';
+  var options = 'address=' + geoAddress + '&sensor=false';
+  
+ request(domain + options, function (error, response, body) {
+    
+    if (!error && response.statusCode == 200) {
+      var json = JSON.parse(body);
+      if (json.status === "OK") {
+        location = json.results[0].geometry.location;
+        formattedAddress = json.results[0].formatted_address;
+
+        var newSpace = new Space ({
+          UUID: nextId,
+          name : name,
+          address : formattedAddress,
+          coordinate: { lat: location.lat, lng: location.lng },
+          price : price,
+          startTime : startTime,
+          endTime : endTime,
+          reserved : false
+        });
+        newSpace.save(function (err) {
+          if (err) {
+            console.log("Error writing new space to database");
+          }
+        });
+        // add to spaces collection
+      }
+    else {
+      errorResponse("Error geocoding", res);
+    }
+  }
+});
+}); // end app.post()
 
 function errorResponse(error, res) {
   console.log(error);
